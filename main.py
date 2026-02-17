@@ -1,22 +1,27 @@
+from typing import Optional
 from fastapi import Body, FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+class Post(BaseModel):
+    title: str
+    content: str
+    published: bool = True
+    rating: Optional[int] = None
+    
+    
+my_storage = [{"title": "title of post 1", "content": "content of post 1", "published": True, "rating": 5, "id": 1},
+              {"title": "title of post 2", "content": "content of post 2", "published": False, "rating": 4, "id": 2}]
+
 
 @app.get("/posts")
 async def root():
-    return {"message": "This is the posts page"}
+    return {"message": my_storage}
 
-@app.post("/new_posts")
-def create_post(payload: dict = Body(...)):
-    return  {
-            "message": "Post created successfully", 
-            "payload": payload,
-            "content": "good",
-            "status": "success",
-            "payload_title" : f"{payload['title']}",
-            "payload_content" : f"{payload['content']}"
-             }
+@app.post("/posts")
+def create_post(new_post: Post):
+    new_post_dict = new_post.dict()
+    new_post_dict['id'] = len(my_storage) + 1
+    my_storage.append(new_post_dict)
+    return  {"data": new_post_dict}
