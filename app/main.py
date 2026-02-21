@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import Body, FastAPI, status, HTTPException
 from pydantic import BaseModel, Field
 from datetime import datetime
+import psycopg2
 
 app = FastAPI()
 
@@ -12,6 +13,15 @@ class Post(BaseModel):
     published: bool = True
     rating: Optional[int] = None
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    
+try:
+    conn = psycopg2.connect(host="localhost", database="fastapi", user="postgres", password="password123")
+    cursor = conn.cursor()
+    print("\n********************************************\nDatabase connection successful\n********************************************\n")
+
+except Exception as error:
+    print("Database connection failed")
+    print(error)
     
 #without database, we will use a list to store our posts
 my_storage = [{"title": "title of post 1", "content": "content of post 1", "published": True, "rating": 5, "id": 1, "created_at": datetime.now()},
@@ -64,3 +74,5 @@ def update_post(id: int, updated_post: Post):
     updated_post_dict['id'] = id
     my_storage[post_index] = updated_post_dict
     return {"data": updated_post_dict}
+
+
